@@ -3,7 +3,7 @@
 
 A powerful CLI tool designed to streamline the initialization of API projects in Node.js. It leverages Express and follows a common, scalable project structure, enabling developers to kick-start their backend setups efficiently.
 
-> **Note**: This CLI is currently in its **alpha version (`1.0.0-alpha.1`)**, meaning it is in active development. Expect frequent updates and improvements as we work towards a stable release.
+> **Note**: This CLI is currently in its **alpha version (`1.0.0-alpha.2`)**, meaning it is in active development. Expect frequent updates and improvements as we work towards a stable release.
 
 ---
 
