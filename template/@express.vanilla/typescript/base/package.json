@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "start": "node ./dist/index.js",
+    "build": "tsc",
+    "dev": "nodemon ./src/index.ts",
+    "test": "ts-node ./src/index.ts"
+  },
+  "keywords": [
+    "api",
+    "http",
+    "express",
+    "stexcore",
+    "server"
+  ],
+  "license": "ISC"
+}

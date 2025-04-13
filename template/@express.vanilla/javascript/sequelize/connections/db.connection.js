@@ -1,5 +1,4 @@
 const { Sequelize } = require("sequelize");
-
 /**
  * Export sequelize
  */

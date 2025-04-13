@@ -1,7 +1,7 @@
-import { createSchema } from "@stexcore/api-engine";
-import Joi from "joi";
+const { createSchema } = require("@stexcore/api-engine");
+const Joi = require("joi");
 
-export default createSchema({
+module.exports = createSchema({
     /**
      * Get infomation schema
      */

@@ -1,0 +1,9 @@
+{
+    "devDependencies": [
+        "@types/express",
+        "@types/morgan",
+        "ts-node",
+        "typescript"
+    ],
+    "dependencies": []
+}

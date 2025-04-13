@@ -1,0 +1,12 @@
+{
+    "devDependencies": [
+        "nodemon"
+    ],
+    "dependencies": [
+        "@stexcore/http-status",
+        "express",
+        "joi",
+        "dotenv",
+        "morgan"
+    ]
+}

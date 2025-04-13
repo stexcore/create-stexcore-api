@@ -1,16 +1,18 @@
-const { Service } = require("@stexcore/api-engine");
+const Service = require("../class/service");
 const fs = require("fs");
 
 /**
  * Information server service
  */
 module.exports = class InfoService extends Service {
+
     /**
      * Get information server
      */
     GetInformationServer() {
         // Read package.json information
         const data = JSON.parse(fs.readFileSync("package.json").toString());
+
         // Get information server
         return {
             server_name: data.name,
@@ -18,6 +20,7 @@ module.exports = class InfoService extends Service {
             uptime: this.getUptime()
         };
     }
+
     /**
      * Get uptime server
      * @returns Uptime text information
@@ -25,6 +28,7 @@ module.exports = class InfoService extends Service {
     getUptime() {
         // Get uptime miliseconds
         const uptimeInSeconds = process.uptime();
+
         // Get uptime text
         if (uptimeInSeconds < 60) {
             return `Uptime ${Math.floor(uptimeInSeconds)} sec`;

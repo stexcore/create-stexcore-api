@@ -1,4 +1,4 @@
-import morgan from "morgan";
+const morgan = require("morgan");
 
 /**
  * Morgan middleware
@@ -6,4 +6,4 @@ import morgan from "morgan";
 const morganMiddleware = morgan("dev");
 
 // export middleware
-export default morganMiddleware;
+module.exports = morganMiddleware;

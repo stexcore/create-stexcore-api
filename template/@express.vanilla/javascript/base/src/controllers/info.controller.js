@@ -1,5 +1,5 @@
-const { Controller } = require("@stexcore/api-engine");
 const InfoService = require("../services/info.service");
+const Controller = require("../class/controller");
 
 /**
  * Handle server information
@@ -7,14 +7,15 @@ const InfoService = require("../services/info.service");
 module.exports = class InfoController extends Controller {
 
     /**
-     * Initialize info controller
-     * @param server Server instance
+     * Constructor controller
      */
-    constructor(server) {
-        super(server);
-        
-        // Get info service
-        this.info = server.getService(InfoService);
+    constructor() {
+        super(...arguments);
+
+        /**
+         * Information service
+         */
+        this.info = this.server.getService(InfoService);
 
         /**
          * Handle request info API
@@ -22,7 +23,7 @@ module.exports = class InfoController extends Controller {
          * @param res Response utils
          * @param next Next middleware
          */
-        this.GET = (_req, res, next) => {
+        this.GetInformation = (_req, res, next) => {
             try {
                 // Response information server
                 res.json({

@@ -1,13 +1,30 @@
 #!/usr/bin/env node
 import inquirer from "inquirer";
-import path from "path";
+import path, { dirname } from "path";
 import fs from "fs";
 import "colors";
-// import { exec } from "child_process";
-// import { promisify } from "util";
+import { exec } from "child_process";
+import { promisify } from "util";
+import ora from "ora";
+import { fileURLToPath } from "url";
+
+const cmd = promisify(exec);
+
+// Make filename and dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 (async () => {
     const values = await inquirer.prompt([
+        {
+            type: "list",
+            message: "What template do you prefer to use for development?",
+            name: "template",
+            choices: [
+                { value: "Express Vanilla" },
+                { value: "Api-Engine Stexcore" }
+            ]
+        },
         {
             type: "input",
             required: true,
@@ -110,9 +127,27 @@ import "colors";
         }
     ]);
 
-    const directory = path.join(__dirname, "../template", "@stexcore.api-engine", values.technology === "JavaScript" ? "javascript" : "typescript");
-    const directory_base = path.join(directory, "base");
-    const directory_sequelize = path.join(directory, "sequelize");
+    let template: string;
+
+    // Get template
+    switch(values.template) {
+        case "Express Vanilla":
+            template = "@express.vanilla";
+            break;
+
+        case "Api-Engine Stexcore":
+            template = "@stexcore.api-engine";
+            break;
+
+        default:
+            throw new Error("Unknow template '" + values.template + "'");
+    }
+    
+    const template_dir = path.join(__dirname, "../template", template);
+    const directory_base = path.join(template_dir, "base");
+    const directory = path.join(template_dir, values.technology === "JavaScript" ? "javascript" : "typescript");
+    const directory_template_base = path.join(directory, "base");
+    const directory_template_sequelize = path.join(directory, "sequelize");
     const destination = process.cwd();
     const destination_src = path.join(destination, "src");
 
@@ -126,10 +161,11 @@ import "colors";
     
     // Copy files base
     CopyFiles(directory_base, destination);
+    CopyFiles(directory_template_base, destination);
 
     if(values.sequelize == "Yes") {
         // Copy sequelize connection
-        CopyFiles(directory_sequelize, destination_src);
+        CopyFiles(directory_template_sequelize, destination_src);
 
         // Append .env content
         fs.appendFileSync(path.join(destination, ".env"),
@@ -149,6 +185,66 @@ import "colors";
             ))
         );
     }
+
+    const spinner = ora({
+        text: "Updating package.json!",
+        color: 'cyan',
+        spinner: 'dots'
+    }).start();
+
+    const packageJsonDir = path.join(destination, "package.json");
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonDir).toString());
+    
+    fs.writeFileSync(packageJsonDir, JSON.stringify({
+        name: values.proyect_name,
+        version: "1.0.0",
+        description: "Api Express to manage incomming request HTTP",
+        ...packageJson,
+    }, null, 2));
+
+    spinner.succeed("Package.json updated!");
+
+    const dependenciesDir = path.join(template_dir, "dependencies.json");
+    const { devDependencies, dependencies } = JSON.parse(fs.readFileSync(dependenciesDir).toString());
+
+    const dependenciesTemplateDir = path.join(directory, "dependencies.json");
+
+    // Validate existent dependencies
+    if(fs.existsSync(dependenciesTemplateDir)) {
+        const { devDependencies: devTemplateDependencies, dependencies: templatesDependencies } = JSON.parse(fs.readFileSync(dependenciesTemplateDir).toString());
+    
+        // Append dependencies
+        dependencies.push(...templatesDependencies);
+        devDependencies.push(...devTemplateDependencies);
+    }
+    
+    if(dependencies.length) { 
+        console.log("Installing dependencies using:");
+
+        const spinner = ora({
+            text: "npm install " + dependencies.join(" "),
+            color: 'cyan',
+            spinner: 'dots'
+        }).start();
+
+        await cmd("npm install " + dependencies.join(" "), { cwd: destination });
+
+        spinner.succeed('Dependencies ' + dependencies.join(", ") + ' installed!');
+    }
+    if(devDependencies.length) {
+        console.log("Installing devDependencies using:");
+
+        const spinner = ora({
+            text: "npm install --save-dev " + devDependencies.join(" "),
+            color: 'cyan',
+            spinner: 'dots'
+        }).start();
+
+        await cmd("npm install --save-dev " + devDependencies.join(" "), { cwd: destination });
+
+        spinner.succeed('devDependencies ' + devDependencies.join(", ") + ' installed!');
+    }
+    
 })()
     .catch((err) => {
         console.log(err instanceof Error ? err.message : "CLI Exited");
@@ -158,8 +254,14 @@ function CopyFiles(from_dir: string, to_dir: string) {
     const files = fs.readdirSync(from_dir);
 
     for(const fileItem of files) {
+        const spinner = ora({
+            text: `Creating file into '${path.join(to_dir, fileItem)}'`,
+            color: 'cyan',
+            spinner: 'dots'
+        }).start();
+
         fs.cpSync(path.join(from_dir, fileItem), path.join(to_dir, fileItem), { recursive: true });
-        console.log(`File '${path.join(to_dir, fileItem)}' created!`.green)
+        spinner.succeed(`File '${path.join(to_dir, fileItem)}' created!`)
     }
 }
 

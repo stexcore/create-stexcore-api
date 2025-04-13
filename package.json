@@ -2,6 +2,7 @@
   "name": "create-stexcore-api",
   "version": "1.0.0-alpha.1",
   "description": "A CLI tool designed to streamline the initialization of API projects in Node.js.. It leverages Express and adheres to a common, scalable project structure, helping developers kick-start their backend setups efficiently.",
+  "type": "module",
   "bin": "dist/index.js",
   "scripts": {
     "test": "ts-node ./src/index.ts",
@@ -20,7 +21,8 @@
   "license": "MIT",
   "dependencies": {
     "colors": "^1.4.0",
-    "inquirer": "^12.5.0"
+    "inquirer": "^12.5.0",
+    "ora": "^8.2.0"
   },
   "devDependencies": {
     "@types/node": "^22.13.17",
