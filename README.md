@@ -1,9 +1,8 @@
-
 # Create Stexcore API CLI 🚀
 
-A powerful CLI tool designed to streamline the initialization of API projects in Node.js. It leverages Express and follows a common, scalable project structure, enabling developers to kick-start their backend setups efficiently.
+![NPM Version](https://img.shields.io/npm/v/create-stexcore-api?style=flat-square) ![License](https://img.shields.io/github/license/stexcore/create-stexcore-api.svg) ![TypeScript](https://img.shields.io/badge/TypeScript-%5E5.8.2-blue?style=flat-square)
 
-> **Note**: This CLI is currently in its **alpha version (`1.0.0-alpha.2`)**, meaning it is in active development. Expect frequent updates and improvements as we work towards a stable release.
+A powerful CLI tool designed to streamline the initialization of API projects in Node.js. It leverages Express and follows a common, scalable project structure, enabling developers to kick-start their backend setups efficiently.
 
 ---
 
@@ -21,7 +20,7 @@ A powerful CLI tool designed to streamline the initialization of API projects in
 ## Installation ⚙️
 To use the CLI, first install it globally:
 ```bash
-npm install -g create-stexcore-api@alpha
+npm install -g create-stexcore-api
 ```
 
 ---
@@ -87,19 +86,8 @@ npm run test
 ---
 
 ## Limitations 🧪
-- As an alpha version, certain features are experimental and may change in future releases.
+- Certain features are experimental and may change in future releases.
 - Currently, only SQLite and major database types are supported for Sequelize integration.
-
----
-
-## Roadmap 🗺️
-- **Beta release** (`1.0.0-beta.1`): 
-  - Stabilization of current features.
-  - Addition of unit tests and better error handling.
-  - Enhanced project templates with documentation.
-- **Stable release** (`1.0.0`): 
-  - Fully tested features.
-  - Expanded support for additional frameworks and configurations.
 
 ---
 
