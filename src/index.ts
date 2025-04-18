@@ -28,8 +28,9 @@ const __dirname = dirname(__filename);
         {
             type: "input",
             required: true,
-            message: "Enter the project name:",
-            name: "proyect_name",
+            message: "Enter the project directory:",
+            default: "./",
+            name: "proyect_dir",
             filter: (value) => {
                 return String(value).trim();
             }
@@ -148,7 +149,7 @@ const __dirname = dirname(__filename);
     const directory = path.join(template_dir, values.technology === "JavaScript" ? "javascript" : "typescript");
     const directory_template_base = path.join(directory, "base");
     const directory_template_sequelize = path.join(directory, "sequelize");
-    const destination = process.cwd();
+    const destination = path.join(process.cwd(), values.proyect_dir);
     const destination_src = path.join(destination, "src");
 
     // console.log("Generating package.json");
@@ -158,6 +159,12 @@ const __dirname = dirname(__filename);
     
     // console.log(stderr);
     // console.log(stdout);
+    
+    if(!fs.existsSync(destination)) {
+        const spinner = CreateLoading("Creating directory:" + destination);
+        fs.mkdirSync(destination);
+        spinner.succeed("Directory '" + destination + "' created!");
+    }
     
     // Copy files base
     CopyFiles(directory_base, destination);
@@ -186,17 +193,13 @@ const __dirname = dirname(__filename);
         );
     }
 
-    const spinner = ora({
-        text: "Updating package.json!",
-        color: 'cyan',
-        spinner: 'dots'
-    }).start();
-
+    const spinner = CreateLoading("Updating package.json!");
     const packageJsonDir = path.join(destination, "package.json");
     const packageJson = JSON.parse(fs.readFileSync(packageJsonDir).toString());
+    const proyect_name = path.basename(destination);
     
     fs.writeFileSync(packageJsonDir, JSON.stringify({
-        name: values.proyect_name,
+        name: proyect_name,
         version: "1.0.0",
         description: "Api Express to manage incomming request HTTP",
         ...packageJson,
@@ -221,11 +224,7 @@ const __dirname = dirname(__filename);
     if(dependencies.length) { 
         console.log("Installing dependencies using:");
 
-        const spinner = ora({
-            text: "npm install " + dependencies.join(" "),
-            color: 'cyan',
-            spinner: 'dots'
-        }).start();
+        const spinner = CreateLoading("npm install " + dependencies.join(" "));
 
         await cmd("npm install " + dependencies.join(" "), { cwd: destination });
 
@@ -234,16 +233,28 @@ const __dirname = dirname(__filename);
     if(devDependencies.length) {
         console.log("Installing devDependencies using:");
 
-        const spinner = ora({
-            text: "npm install --save-dev " + devDependencies.join(" "),
-            color: 'cyan',
-            spinner: 'dots'
-        }).start();
+        const spinner = CreateLoading("npm install --save-dev " + devDependencies.join(" "));
 
         await cmd("npm install --save-dev " + devDependencies.join(" "), { cwd: destination });
 
         spinner.succeed('devDependencies ' + devDependencies.join(", ") + ' installed!');
     }
+
+    console.log("\n✅ Project successfully generated!");
+
+    console.log(`
+👉 To get started with your new project:
+
+1. Navigate to the project directory:
+
+   ${`cd ${destination}`.cyan}
+
+2. Start the server in development mode:
+
+   ${"npm run dev".cyan}
+
+All set! 🚀 Start building something amazing!
+`);
     
 })()
     .catch((err) => {
@@ -254,11 +265,7 @@ function CopyFiles(from_dir: string, to_dir: string) {
     const files = fs.readdirSync(from_dir);
 
     for(const fileItem of files) {
-        const spinner = ora({
-            text: `Creating file into '${path.join(to_dir, fileItem)}'`,
-            color: 'cyan',
-            spinner: 'dots'
-        }).start();
+        const spinner = CreateLoading(`Creating file into '${path.join(to_dir, fileItem)}'`);
 
         fs.cpSync(path.join(from_dir, fileItem), path.join(to_dir, fileItem), { recursive: true });
         spinner.succeed(`File '${path.join(to_dir, fileItem)}' created!`)
@@ -273,4 +280,12 @@ function isDBConnection({ db_type }: { db_type?: string }) {
         "postgres",
         "mssql",
     ].includes(String(db_type));
+}
+
+function CreateLoading(text: string) {
+    return ora({
+        text: text,
+        color: 'cyan',
+        spinner: 'dots'
+    }).start();
 }
