@@ -1,6 +1,5 @@
+import type Server from "../server";
 import { Router } from "express";
-import Server from "../server";
-import schemaMiddleware from "../middlewares/schema.middleware";
 import infoSchema from "../schemas/info.schema";
 import InfoController from "../controllers/info.controller";
 
@@ -15,7 +14,7 @@ export default function infoRouter(server: Server) {
     const infoController = new InfoController(server);
 
     // Append endpoint
-    router.get("/", schemaMiddleware(infoSchema.GET), infoController.GetInformation);
+    router.get("/", infoSchema.GET, infoController.GetInformation);
     
     return router;
 }

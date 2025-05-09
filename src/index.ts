@@ -7,6 +7,16 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import ora from "ora";
 import { fileURLToPath } from "url";
+import Joi from "joi";
+
+interface ISchemaInsert {
+    file: string,
+    inserts: {
+        position: string
+        search: string
+        content: string
+    }[]
+}
 
 const cmd = promisify(exec);
 
@@ -172,7 +182,7 @@ const __dirname = dirname(__filename);
 
     if(values.sequelize == "Yes") {
         // Copy sequelize connection
-        CopyFiles(directory_template_sequelize, destination_src);
+        CopyFiles(directory_template_sequelize, destination);
 
         // Append .env content
         fs.appendFileSync(path.join(destination, ".env"),
@@ -261,16 +271,66 @@ All set! 🚀 Start building something amazing!
         console.log(err instanceof Error ? err.message : "CLI Exited");
     });
 
-function CopyFiles(from_dir: string, to_dir: string) {
-    const files = fs.readdirSync(from_dir);
+    const schemaInserts = Joi.array<ISchemaInsert[]>().items(
+        Joi.object({
+            "file": Joi.string().required(),
+            "inserts": Joi.array().items(
+                Joi.object({
+                    "position": Joi.string().required(),
+                    "search": Joi.string().required(),
+                    "content": Joi.string().required()
+                })
+            )
+        })
+    );
 
-    for(const fileItem of files) {
-        const spinner = CreateLoading(`Creating file into '${path.join(to_dir, fileItem)}'`);
+    function CopyFiles(from_dir: string, to_dir: string) {
+        if (!fs.existsSync(to_dir)) {
+            fs.mkdirSync(to_dir, { recursive: true }); // Asegurar que el destino existe
+        }
+    
+        const items = fs.readdirSync(from_dir);
+        const inserts: { root: string, insert_file: string }[] = [];
+    
+        for (const item of items) {
+            const fromPath = path.join(from_dir, item);
+            const toPath = path.join(to_dir, item);
+    
+            const stats = fs.statSync(fromPath);
+    
+            if(item == "@inserts.json") {
+                inserts.push({ root: from_dir, insert_file: fromPath });
+            }
+            else if (stats.isDirectory()) {
+                // Si es una carpeta, entrar recursivamente en ella
+                CopyFiles(fromPath, toPath);
+            } else {
+                // Si es un archivo, solo copiar si no existe
+                const spinner = CreateLoading(`Copying '${item}' to '${toPath}'`);
+                if (!fs.existsSync(toPath)) {
+                    fs.copyFileSync(fromPath, toPath);
+                    spinner.succeed(`File '${item}' copied!`);
+                } else {
+                    spinner.warn(`Skipping '${item}', already exists.`);
+                }
+            }
+        }
 
-        fs.cpSync(path.join(from_dir, fileItem), path.join(to_dir, fileItem), { recursive: true });
-        spinner.succeed(`File '${path.join(to_dir, fileItem)}' created!`)
+        for(const insertFile of inserts) {
+            const data = JSON.parse(
+                fs.readFileSync(insertFile.insert_file).toString()
+            );
+
+            const validation = schemaInserts.validate(data);
+
+            if(validation.error) {
+                throw validation.error;
+            }
+            else {
+                const dataFile = fs.readFileSync(insertFile.insert_file);
+            }
+        }
     }
-}
 
 function isDBConnection({ db_type }: { db_type?: string }) {
     return [

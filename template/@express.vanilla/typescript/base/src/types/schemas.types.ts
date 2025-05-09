@@ -1,4 +1,4 @@
-import { ObjectSchema } from "joi";
+import type { ObjectSchema } from "joi";
 
 /**
  * Schema request incomming
@@ -25,6 +25,11 @@ export interface ISchemaRequest {
      * Body schema. This body is received into body request incomming
      */
     body?: ObjectSchema,
+
+    /**
+     * Headers schema. This headers is received into headers request incomming
+     */
+    headers?: ObjectSchema,
 
     /**
      * Query schema. This query is received into searchParams by path. Sample path:

@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import type { RequestHandler } from "express";
 import InfoService from "../services/info.service";
 import Controller from "../class/controller";
 

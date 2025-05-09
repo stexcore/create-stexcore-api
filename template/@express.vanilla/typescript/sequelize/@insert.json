@@ -1,0 +1,17 @@
+[
+    {
+        "file": "src/server.ts",
+        "inserts": [
+            {
+                "position": "before",
+                "search": "// Register services",
+                "content": "this.registerService(DbService);"
+            },
+            {
+                "position": "before",
+                "search": "import InfoService from \"./services/info.service\";",
+                "content": "import DbService from \"./services/db.service\";"
+            }
+        ]
+    }
+]

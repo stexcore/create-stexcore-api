@@ -1,6 +1,6 @@
+import type Service from "./class/service";
 import http from "http";
 import express from "express";
-import Service from "./class/service";
 import catchGlobalErrorMiddleware from "./middlewares/catchGlobalError.middleware";
 import catchHttpErrorMiddleware from "./middlewares/catchHttpError.middleware";
 import infoRouter from "./routers/info.router";
