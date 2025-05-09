@@ -18,6 +18,11 @@ interface ISchemaInsert {
     }[]
 }
 
+interface ISchemaDependencies {
+    dependencies: string[],
+    devDependencies: string[]
+}
+
 const cmd = promisify(exec);
 
 // Make filename and dirname
@@ -84,7 +89,7 @@ const __dirname = dirname(__filename);
             type: "input",
             message: "Please specify the file path where the SQLite database will be stored:",
             name: "db_path",
-            default: "data/database.sqlite",
+            default: ".data/database.sqlite",
             when: (values) => {
                 return values.db_type == "sqlite"
             }
@@ -101,7 +106,7 @@ const __dirname = dirname(__filename);
             message: "Enter the port number for connecting to the database",
             name: "db_port",
             default: (values) => {
-                switch(values.db_type) {
+                switch (values.db_type) {
                     case "mariadb":
                     case "mysql":
                         return 3306;
@@ -141,7 +146,7 @@ const __dirname = dirname(__filename);
     let template: string;
 
     // Get template
-    switch(values.template) {
+    switch (values.template) {
         case "Express Vanilla":
             template = "@express.vanilla";
             break;
@@ -153,61 +158,96 @@ const __dirname = dirname(__filename);
         default:
             throw new Error("Unknow template '" + values.template + "'");
     }
-    
+
     const template_dir = path.join(__dirname, "../template", template);
     const directory_base = path.join(template_dir, "base");
     const directory = path.join(template_dir, values.technology === "JavaScript" ? "javascript" : "typescript");
     const directory_template_base = path.join(directory, "base");
     const directory_template_sequelize = path.join(directory, "sequelize");
     const destination = path.join(process.cwd(), values.proyect_dir);
-    const destination_src = path.join(destination, "src");
 
-    // console.log("Generating package.json");
-
-    // // Execute npm initialization
-    // const { stdout, stderr } = await promisify(exec)(`npm init -y --name "${values.proyect_name}" --version "1.0.0"`);
-    
-    // console.log(stderr);
-    // console.log(stdout);
-    
-    if(!fs.existsSync(destination)) {
+    if (!fs.existsSync(destination)) {
         const spinner = CreateLoading("Creating directory:" + destination);
         fs.mkdirSync(destination);
         spinner.succeed("Directory '" + destination + "' created!");
     }
-    
+
+    // List files to copy
+    const filesToCopy: { from: string, to: string, onCopied?: () => void }[] = [];
+
     // Copy files base
-    CopyFiles(directory_base, destination);
-    CopyFiles(directory_template_base, destination);
+    filesToCopy.push({ from: directory_base, to: destination });
+    filesToCopy.push({ from: directory_template_base, to: destination });
 
-    if(values.sequelize == "Yes") {
+    if (values.sequelize == "Yes") {
         // Copy sequelize connection
-        CopyFiles(directory_template_sequelize, destination);
+        filesToCopy.push({ 
+            from: directory_template_sequelize, 
+            to: destination,
+            onCopied: () => {
+                // Append .env content
+                fs.appendFileSync(path.join(destination, ".env"),
+                    "\n\n" +
+                    "# Database Config\n" +
+                    "DB_TYPE=" + JSON.stringify(values.db_type) + "\n" +
+                        (values.db_type == "sqlite" ? (
+                            "DB_STORAGE=" + JSON.stringify(values.db_path)
+                        ) : (
+                            (
+                                values.db_database === "optional" ? "" :
+                                    ("DB_DATABASE=" + JSON.stringify(values.db_database ?? null))
+                            ) +
+                            "DB_USER=" + JSON.stringify(values.db_user) + "\n" +
+                            "DB_PASSWORD=" + JSON.stringify(values.db_pass) + "\n" +
+                            "DB_HOST=" + JSON.stringify(values.db_host)
+                        ))
+                );
 
-        // Append .env content
-        fs.appendFileSync(path.join(destination, ".env"),
-            "\n\n" +
-            "# Database Config\n" +
-            "DB_TYPE=" + JSON.stringify(values.db_type) + "\n" +
-            (values.db_type == "sqlite" ? (
-                "DB_STORAGE=" + JSON.stringify(values.db_path)
-            ) : (
-                (
-                    values.db_database === "optional" ? "" : 
-                    ("DB_DATABASE=" + JSON.stringify(values.db_database ?? null))
-                ) +
-                "DB_USER=" + JSON.stringify(values.db_user) + "\n" +
-                "DB_PASSWORD=" + JSON.stringify(values.db_pass) + "\n" +
-                "DB_HOST=" + JSON.stringify(values.db_host)
-            ))
-        );
+                switch(values.db_type) {
+                    case "sqlite":
+                        dependencies.push("sqlite3");
+                        break;
+
+                    case "mysql":
+                        dependencies.push("mysql2");
+                        break;
+
+                    case "mariadb":
+                        dependencies.push("mariadb");
+                        break;
+
+                    case "msql":
+                        dependencies.push("tedious");
+                        break;
+
+                    default:
+                        console.log("Without append DB connection manager dependencies!");
+                }
+            }
+        });
     }
 
+    // Dependencies to load
+    const dependencies: string[] = [];
+    const devDependencies: string[] = [];
+
+    // Copy files
+    for(const copyItem of filesToCopy) {
+        const result = CopyFiles(copyItem.from, copyItem.to);
+
+        // Append dependencies founded!
+        dependencies.push(...result.dependencies);
+        devDependencies.push(...result.devDependencies);
+
+        copyItem.onCopied?.();
+    }
+
+    // Append package.json
     const spinner = CreateLoading("Updating package.json!");
     const packageJsonDir = path.join(destination, "package.json");
     const packageJson = JSON.parse(fs.readFileSync(packageJsonDir).toString());
     const proyect_name = path.basename(destination);
-    
+
     fs.writeFileSync(packageJsonDir, JSON.stringify({
         name: proyect_name,
         version: "1.0.0",
@@ -217,21 +257,7 @@ const __dirname = dirname(__filename);
 
     spinner.succeed("Package.json updated!");
 
-    const dependenciesDir = path.join(template_dir, "dependencies.json");
-    const { devDependencies, dependencies } = JSON.parse(fs.readFileSync(dependenciesDir).toString());
-
-    const dependenciesTemplateDir = path.join(directory, "dependencies.json");
-
-    // Validate existent dependencies
-    if(fs.existsSync(dependenciesTemplateDir)) {
-        const { devDependencies: devTemplateDependencies, dependencies: templatesDependencies } = JSON.parse(fs.readFileSync(dependenciesTemplateDir).toString());
-    
-        // Append dependencies
-        dependencies.push(...templatesDependencies);
-        devDependencies.push(...devTemplateDependencies);
-    }
-    
-    if(dependencies.length) { 
+    if (dependencies.length) {
         console.log("Installing dependencies using:");
 
         const spinner = CreateLoading("npm install " + dependencies.join(" "));
@@ -240,7 +266,7 @@ const __dirname = dirname(__filename);
 
         spinner.succeed('Dependencies ' + dependencies.join(", ") + ' installed!');
     }
-    if(devDependencies.length) {
+    if (devDependencies.length) {
         console.log("Installing devDependencies using:");
 
         const spinner = CreateLoading("npm install --save-dev " + devDependencies.join(" "));
@@ -265,72 +291,165 @@ const __dirname = dirname(__filename);
 
 All set! 🚀 Start building something amazing!
 `);
-    
+
 })()
     .catch((err) => {
         console.log(err instanceof Error ? err.message : "CLI Exited");
+        process.exit(-1);
     });
 
-    const schemaInserts = Joi.array<ISchemaInsert[]>().items(
-        Joi.object({
-            "file": Joi.string().required(),
-            "inserts": Joi.array().items(
-                Joi.object({
-                    "position": Joi.string().required(),
-                    "search": Joi.string().required(),
-                    "content": Joi.string().required()
-                })
-            )
-        })
-    );
+const schemaInserts = Joi.array<ISchemaInsert[]>().items(
+    Joi.object({
+        "file": Joi.string().required(),
+        "inserts": Joi.array().items(
+            Joi.object({
+                "position": Joi.string().required(),
+                "search": Joi.string().required(),
+                "content": Joi.string().required()
+            })
+        )
+    })
+);
 
-    function CopyFiles(from_dir: string, to_dir: string) {
-        if (!fs.existsSync(to_dir)) {
-            fs.mkdirSync(to_dir, { recursive: true }); // Asegurar que el destino existe
-        }
-    
-        const items = fs.readdirSync(from_dir);
-        const inserts: { root: string, insert_file: string }[] = [];
-    
-        for (const item of items) {
-            const fromPath = path.join(from_dir, item);
-            const toPath = path.join(to_dir, item);
-    
-            const stats = fs.statSync(fromPath);
-    
-            if(item == "@inserts.json") {
-                inserts.push({ root: from_dir, insert_file: fromPath });
-            }
-            else if (stats.isDirectory()) {
-                // Si es una carpeta, entrar recursivamente en ella
-                CopyFiles(fromPath, toPath);
-            } else {
-                // Si es un archivo, solo copiar si no existe
-                const spinner = CreateLoading(`Copying '${item}' to '${toPath}'`);
-                if (!fs.existsSync(toPath)) {
-                    fs.copyFileSync(fromPath, toPath);
-                    spinner.succeed(`File '${item}' copied!`);
-                } else {
-                    spinner.warn(`Skipping '${item}', already exists.`);
-                }
-            }
-        }
+const schemaDependencies = Joi.object<ISchemaDependencies>({
+    dependencies: Joi.array().items(
+        Joi.string()
+    ),
+    devDependencies: Joi.array().items(
+        Joi.string()
+    )
+});
 
-        for(const insertFile of inserts) {
+function CopyFiles(from_dir: string, to_dir: string): { dependencies: string[], devDependencies: string[] } {
+    const dependencies: string[] = [];
+    const devDependencies: string[] = [];
+    
+    if (!fs.existsSync(to_dir)) {
+        fs.mkdirSync(to_dir, { recursive: true }); // Asegurar que el destino existe
+    }
+
+    const items = fs.readdirSync(from_dir);
+    const inserts: { root: string, insert_file: string }[] = [];
+
+    for (const item of items) {
+        const fromPath = path.join(from_dir, item);
+        const toPath = path.join(to_dir, item);
+
+        const stats = fs.statSync(fromPath);
+
+        if (item == "@insert.json") {
+            inserts.push({ root: to_dir, insert_file: fromPath });
+        }
+        else if(item == "@dependencies.json") {
             const data = JSON.parse(
-                fs.readFileSync(insertFile.insert_file).toString()
+                fs.readFileSync(fromPath).toString()
             );
 
-            const validation = schemaInserts.validate(data);
+            const result = schemaDependencies.validate(data);
 
-            if(validation.error) {
-                throw validation.error;
+            if(result.error) {
+                throw new Error(result.error.message);
             }
             else {
-                const dataFile = fs.readFileSync(insertFile.insert_file);
+                dependencies.push(...result.value.dependencies);
+                devDependencies.push(...result.value.devDependencies);
+            }
+        }
+        else if (stats.isDirectory()) {
+            // Si es una carpeta, entrar recursivamente en ella
+            CopyFiles(fromPath, toPath);
+        } else {
+            // Si es un archivo, solo copiar si no existe
+            const spinner = CreateLoading(`Copying '${item}' to '${toPath}'`);
+            if (!fs.existsSync(toPath)) {
+                fs.copyFileSync(fromPath, toPath);
+                spinner.succeed(`File '${item}' copied!`);
+            } else {
+                spinner.warn(`Skipping '${item}', already exists.`);
             }
         }
     }
+
+    for (const insertFile of inserts) {
+        const data = JSON.parse(
+            fs.readFileSync(insertFile.insert_file).toString()
+        );
+
+        const validation = schemaInserts.validate(data);
+
+        if (validation.error) {
+            throw validation.error;
+        }
+        else {
+            const fileInserting = insertFile.insert_file.replace(path.join(__dirname, ".."), "")
+            const spinner = CreateLoading(`Inserting data using '${fileInserting}' directive`);
+            try {
+                for (const operationInsert of validation.value) {
+                    const dirFile = path.join(insertFile.root, operationInsert.file);
+                    let dataFile = fs.readFileSync(dirFile).toString();
+
+                    for (const insert of operationInsert.inserts) {
+                        let padding = "";
+                        const index = dataFile.search(insert.search);
+
+                        if (index !== -1) {
+
+                            switch (insert.position) {
+                                case "after": {
+                                    let indexEnd = dataFile.indexOf("\n", index);
+                                    const spaces = ["\t", " "];
+                                    for (let i = index - 1; i >= 0 && spaces.includes(dataFile[i]); i--) {
+                                        padding += dataFile[i];
+                                    }
+
+                                    if (indexEnd === -1) indexEnd = dataFile.length;
+
+                                    dataFile =
+                                        dataFile.substring(0, indexEnd) + "\n" +
+                                        padding + insert.content.replace(/\n/g, "\n" + padding) +
+                                        dataFile.substring(indexEnd, dataFile.length);
+                                } break;
+
+                                case "before": {
+                                    let indexStart = index;
+                                    const spaces = ["\t", " "];
+                                    let padding = "";
+
+                                    while (indexStart > 0 && dataFile[indexStart - 1] !== "\n") {
+                                        indexStart--;
+                                    }
+
+                                    for (let i = indexStart; i < index && spaces.includes(dataFile[i]); i++) {
+                                        padding += dataFile[i];
+                                    }
+
+                                    dataFile =
+                                        dataFile.substring(0, indexStart) +
+                                        padding + insert.content.replace(/\n/g, "\n" + padding) + "\n" +
+                                        dataFile.substring(indexStart, dataFile.length);
+                                } break;
+
+                                default:
+                                    throw new Error("Position to insert '" + insert.position + "' invalid!");
+                            }
+
+                        }
+                        else throw new Error("Search '" + insert.search + "' is'nt matched in file '" + dirFile + "'!");
+                    }
+
+                    fs.writeFileSync(dirFile, dataFile);
+                }
+                spinner.succeed(`Inserted data using '${fileInserting}' directive`)
+            }
+            catch (err) {
+                spinner.fail(`Failed to insert data using '${fileInserting}' directive`)
+                throw err;
+            }
+        }
+    }
+
+    return { dependencies, devDependencies };
+}
 
 function isDBConnection({ db_type }: { db_type?: string }) {
     return [

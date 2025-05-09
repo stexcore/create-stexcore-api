@@ -1,10 +1,10 @@
-import { Model, DataTypes } from "sequelize";
-import dbConnection from "../connections/db.connection";
+import { DataTypes, Model } from "sequelize";
+import type { ModelConstructor } from "../types/model-constructor.type";
 
 /**
- * User Interface
+ * User interface
  */
-interface IUser {
+export interface IUser {
     /**
      * User ID
      */
@@ -20,42 +20,28 @@ interface IUser {
 }
 
 /**
- * Instance Model
+ * Create a model to User
+ * @param sequelize Sequelize connection
+ * @returns Model
  */
-class User extends Model<IUser, Omit<IUser, "id">> implements IUser {
-    /**
-     * User ID
-     */
-    public id!: number;
-    /**
-     * User name
-     */
-    public username!: string;
-    /**
-     * Password
-     */
-    public password!: string;
+const UserModel: ModelConstructor<IUser, Omit<IUser, "id">> = (sequelize) => {
+
+    // Define Structure model
+    return sequelize.define<Model<IUser> & IUser>("User", {
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        },
+        username: {
+            type: DataTypes.CHAR(15),
+            allowNull: false
+        },
+        password: {
+            type: DataTypes.CHAR(40),
+            allowNull: false
+        }
+    });
 }
 
-// Initialize model
-User.init({
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    username: {
-        type: DataTypes.CHAR(15),
-        allowNull: false
-    },
-    password: {
-        type: DataTypes.CHAR(40),
-        allowNull: false
-    }
-}, {
-    sequelize: dbConnection,
-    tableName: "users",
-});
-
-// export model
-export default User;
+export default UserModel;

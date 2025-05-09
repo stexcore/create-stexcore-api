@@ -3,14 +3,19 @@
         "file": "src/server.ts",
         "inserts": [
             {
-                "position": "before",
+                "position": "after",
                 "search": "// Register services",
-                "content": "this.registerService(DbService);"
+                "content": "this.registerService(DBService);"
+            },
+            {
+                "position": "after",
+                "search": "import InfoService from \"./services/info.service\";",
+                "content": "import DBService from \"./services/db.service\";\nimport UserModel from \"./models/user.model\";"
             },
             {
                 "position": "before",
-                "search": "import InfoService from \"./services/info.service\";",
-                "content": "import DbService from \"./services/db.service\";"
+                "search": "// Append middlewares",
+                "content": "const dbService = this.getService(DBService);\n\n// Register models\ndbService.registerModel(UserModel);\n\n// Syncronize\ndbService.connection.sync({ });"
             }
         ]
     }
