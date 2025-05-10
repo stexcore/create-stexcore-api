@@ -8,6 +8,9 @@ import InfoService from "./services/info.service";
 import morganMiddleware from "./middlewares/morgan.middleware";
 import path from "path";
 
+/**
+ * Server instance
+ */
 export default class Server {
 
     /**

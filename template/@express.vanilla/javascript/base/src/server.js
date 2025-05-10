@@ -7,7 +7,11 @@ const InfoService = require("./services/info.service");
 const morganMiddleware = require("./middlewares/morgan.middleware");
 const path = require("path");
 
+/**
+ * Server instance
+ */
 module.exports = class Server {
+
     /**
      * Initialize structure of server class
      */
@@ -96,4 +100,5 @@ module.exports = class Server {
             throw new Error("Service not found!");
         return serviceItem;
     }
+
 }

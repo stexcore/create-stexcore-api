@@ -8,15 +8,25 @@ const Joi = require("joi");
  * @returns Request handler
  */
 module.exports = function schemaMiddleware(schema) {
-
     // Create a schema to validate
-    const composeSchema = Joi.object(Object.assign(Object.assign(Object.assign({}, (schema.query && { query: schema.query })), (schema.params && { params: schema.params })), (schema.body && { body: schema.body })));
+    const composeSchema = Joi.object(
+        Object.assign(
+            Object.assign(
+                Object.assign(
+                    Object.assign({}, (schema.query && { query: schema.query })), 
+                    (schema.params && { params: schema.params })
+                ), 
+                (schema.body && { body: schema.body })
+            ), 
+            (schema.headers && { headers: schema.headers.unknown(true) })
+        )
+    );
 
     // Make request handler
     return (req, _res, next) => {
         try {
             // Validate schema with joi
-            const resultValidation = composeSchema.validate(Object.assign(Object.assign(Object.assign({}, (schema.query && { query: req.query })), (schema.params && { params: req.params })), (schema.body && { body: req.body })), { abortEarly: false });
+            const resultValidation = composeSchema.validate(Object.assign(Object.assign(Object.assign(Object.assign({}, (schema.query && { query: req.query })), (schema.params && { params: req.params })), (schema.body && { body: req.body })), (schema.headers && { headers: req.headers })), { abortEarly: false });
 
             if (resultValidation.error) {
                 // Throw error

@@ -1,0 +1,22 @@
+[
+    {
+        "file": "src/server.js",
+        "inserts": [
+            {
+                "position": "after",
+                "search": "// Register services",
+                "content": "this.registerService(DBService);"
+            },
+            {
+                "position": "after",
+                "search": "const InfoService = require(\"./services/info.service\");",
+                "content": "const DBService = require(\"./services/db.service\");\nconst UserModel = require(\"./models/user.model\");"
+            },
+            {
+                "position": "before",
+                "search": "// Append middlewares",
+                "content": "const dbService = this.getService(DBService);\n\n// Register models\ndbService.registerModel(UserModel);\n\n// Syncronize\ndbService.connection.sync({ });"
+            }
+        ]
+    }
+]

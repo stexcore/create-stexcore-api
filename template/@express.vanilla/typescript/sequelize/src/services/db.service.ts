@@ -11,20 +11,51 @@ export default class DBService extends Service {
      * Sequelize Connection
      */
     public readonly connection = new Sequelize({
+        /**
+         * Dialect Type
+         */
         dialect:    process.env.DB_TYPE as Dialect,
+        /**
+         * Database
+         */
         database:   process.env.DB_DATABASE!,
+        /**
+         * Storage info
+         */
         storage:    process.env.DB_STORAGE!,
+        /**
+         * User connection
+         */
         username:   process.env.DB_USER!,
+        /**
+         * Password connection
+         */
         password:   process.env.DB_PASSWORD!,
+        /**
+         * Host connection
+         */
         host:       process.env.DB_HOST!,
-        port:       typeof process.env.DB_PORT == "string" ? Number(process.env.DB_PORT) : undefined
+        /**
+         * Port connection
+         */
+        port:       typeof process.env.DB_PORT == "string" ? Number(process.env.DB_PORT) : undefined,
+        /**
+         * Logs
+         */
+        logging: process.env.NODE_ENV === "development"
     });
 
     /**
      * Models instances
      */
     private models: {
+        /**
+         * Model instance
+         */
         modelInstance: ModelStatic<any>,
+        /**
+         * Model constructor
+         */
         modelConstructor: ModelConstructor
     }[] = [];
 
@@ -44,11 +75,17 @@ export default class DBService extends Service {
         return modelItem.modelInstance as ReturnType<M>;
     }
 
+    /**
+     * Register model and create an instance
+     * @param modelConstructor Model constructor
+     */
     public registerModel(modelConstructor: ModelConstructor) {
+        // Validate models conflict
         if(this.models.some((m) => m.modelConstructor === modelConstructor)) {
             throw new Error("The model is already registered!");
         }
 
+        // Create an instance model
         this.models.push({
             modelConstructor,
             modelInstance: modelConstructor(this.connection)

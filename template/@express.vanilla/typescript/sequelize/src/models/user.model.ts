@@ -1,4 +1,4 @@
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, type Model } from "sequelize";
 import type { ModelConstructor } from "../types/model-constructor.type";
 
 /**

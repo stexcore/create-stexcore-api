@@ -6,6 +6,7 @@ dotenv.config();
 
 // Create server instance
 const server = new Server();
+
 // Extract port server
 const port = Number(process.env.APP_PORT);
 

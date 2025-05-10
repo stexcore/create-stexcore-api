@@ -1,5 +1,4 @@
 const { Router } = require("express");
-const schemaMiddleware = require("../middlewares/schema.middleware");
 const infoSchema = require("../schemas/info.schema");
 const InfoController = require("../controllers/info.controller");
 
@@ -15,7 +14,7 @@ module.exports = function infoRouter(server) {
     const infoController = new InfoController(server);
 
     // Append endpoint
-    router.get("/", schemaMiddleware(infoSchema.GET), infoController.GetInformation);
+    router.get("/", infoSchema.GET, infoController.GetInformation);
 
     return router;
 }

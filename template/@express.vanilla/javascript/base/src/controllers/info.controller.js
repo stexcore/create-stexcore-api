@@ -7,7 +7,7 @@ const Controller = require("../class/controller");
 module.exports = class InfoController extends Controller {
 
     /**
-     * Constructor controller
+     * Constructor info controller
      */
     constructor() {
         super(...arguments);
@@ -37,5 +37,6 @@ module.exports = class InfoController extends Controller {
                 next(err);
             }
         };
+
     }
 }

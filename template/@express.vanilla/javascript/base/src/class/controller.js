@@ -2,6 +2,7 @@
  * Structure base of controller
  */
 module.exports = class Controller {
+
     /**
      * Initialize controller
      * @param server Server instance
@@ -9,4 +10,5 @@ module.exports = class Controller {
     constructor(server) {
         this.server = server;
     }
+
 }
