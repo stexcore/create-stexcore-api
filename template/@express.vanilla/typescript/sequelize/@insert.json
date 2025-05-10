@@ -10,12 +10,7 @@
             {
                 "position": "after",
                 "search": "import InfoService from \"./services/info.service\";",
-                "content": "import DBService from \"./services/db.service\";\nimport UserModel from \"./models/user.model\";"
-            },
-            {
-                "position": "before",
-                "search": "// Append middlewares",
-                "content": "const dbService = this.getService(DBService);\n\n// Register models\ndbService.registerModel(UserModel);\n\n// Syncronize\ndbService.connection.sync({ });"
+                "content": "import DBService from \"./services/db.service\";"
             }
         ]
     }

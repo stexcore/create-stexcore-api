@@ -1,6 +1,8 @@
 import { type Dialect, type ModelStatic, Sequelize } from "sequelize";
 import { type ModelConstructor } from "../types/model-constructor.type";
 import Service from "../class/service";
+import Server from "../server";
+import UserModel from "../models/user.model";
 
 /**
  * DBService
@@ -58,6 +60,19 @@ export default class DBService extends Service {
          */
         modelConstructor: ModelConstructor
     }[] = [];
+
+    /**
+     * Initialize DB Service
+     */
+    constructor(server: Server) {
+        super(server);
+
+        // Register models
+        this.registerModel(UserModel);
+
+        // Syncronize connection
+        this.connection.sync({ });
+    }
 
     /**
      * Get model instance

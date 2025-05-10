@@ -1,5 +1,6 @@
 const { Sequelize } = require("sequelize");
 const Service = require("../class/service");
+const UserModel = require("../models/user.model");
 
 /**
  * DBService
@@ -54,6 +55,14 @@ module.exports = class DBService extends Service {
          * Models instances
          */
         this.models = [];
+
+        /**
+         * Append instances
+         */
+        this.registerModel(UserModel);
+
+        // Syncronize connection
+        this.connection.sync({ });
     }
 
     /**
