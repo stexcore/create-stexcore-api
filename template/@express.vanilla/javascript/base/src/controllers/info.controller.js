@@ -15,7 +15,7 @@ module.exports = class InfoController extends Controller {
         /**
          * Information service
          */
-        this.info = this.server.getService(InfoService);
+        this.info = this.$(InfoService);
 
         /**
          * Handle request info API

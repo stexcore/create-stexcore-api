@@ -10,7 +10,7 @@ export default class InfoController extends Controller {
     /**
      * Information service
      */
-    private info: InfoService = this.server.getService(InfoService);
+    private info: InfoService = this.$(InfoService);
 
     /**
      * Handle request info API

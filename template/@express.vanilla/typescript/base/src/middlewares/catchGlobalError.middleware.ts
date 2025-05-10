@@ -8,9 +8,10 @@ import { internalServerError } from "@stexcore/http-status";
  * @param res Response utils
  * @param next Next middleware
  */
-const catchGlobalErrorMiddleware: ErrorRequestHandler = (_err, _req, res, next) => {
+const catchGlobalErrorMiddleware: ErrorRequestHandler = (err, _req, res, next) => {
     try {
-        res.json(internalServerError());
+        console.error(err);
+        res.status(500).json(internalServerError());
     }
     catch(err) {
         next(err);

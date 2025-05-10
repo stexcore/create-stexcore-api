@@ -1,11 +1,24 @@
 const { Sequelize } = require("sequelize");
 const Service = require("../class/service");
 const UserModel = require("../models/user.model");
+const Piece = require("../class/piece");
+
+// Append Method to Piece
+Piece.prototype.getModel = 
+Piece.prototype.model$ = (
+    // Function handle to get Model instance
+    function(modelConstructor) {
+        // Get DB Service
+        const db = this.getService(DBService);
+        // Get Model
+        return db.getModel(modelConstructor);
+    }
+);
 
 /**
  * DBService
  */
-module.exports = class DBService extends Service {
+class DBService extends Service {
 
     /**
      * DB Service instance
@@ -99,3 +112,6 @@ module.exports = class DBService extends Service {
         });
     }
 }
+
+// Export default
+module.exports = DBService

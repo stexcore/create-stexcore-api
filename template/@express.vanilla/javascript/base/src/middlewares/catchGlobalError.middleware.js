@@ -7,9 +7,10 @@ const { internalServerError } = require("@stexcore/http-status");
  * @param res Response utils
  * @param next Next middleware
  */
-const catchGlobalErrorMiddleware = (_err, _req, res, next) => {
+const catchGlobalErrorMiddleware = (err, _req, res, next) => {
     try {
-        res.json(internalServerError());
+        console.error(err);
+        res.status(500).json(internalServerError());
     }
     catch (err) {
         next(err);

@@ -1,14 +1,9 @@
-import type Server from "../server";
+import { Piece } from "./piece";
 
 /**
  * Structure base of controller
  */
-export default class Controller {
+export class Controller extends Piece { }
 
-    /**
-     * Initialize controller
-     * @param server Server instance
-     */
-    constructor(public readonly server: Server) {}
-    
-}
+// Export default
+export default Controller;

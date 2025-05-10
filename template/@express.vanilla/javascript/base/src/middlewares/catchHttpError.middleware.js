@@ -11,7 +11,7 @@ const catchHttpErrorMiddleware = (err, _req, res, next) => {
     try {
         // Validate if is http error
         if (isHttpError(err)) {
-            res.json(err);
+            res.status(err.statusCode).json(err);
         }
         else
             next(err);
