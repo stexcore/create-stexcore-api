@@ -5,7 +5,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 // Create server instance
-const server = createServer({ port: process.env.APP_PORT, workdir: __dirname });
+const server = createServer({ port: Number(process.env.APP_PORT || 9000), workdir: __dirname });
 
 // Initialize server
 server.initialize();
