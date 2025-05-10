@@ -390,7 +390,7 @@ function CopyFiles(from_dir: string, to_dir: string): { dependencies: string[], 
 
                     for (const insert of operationInsert.inserts) {
                         let padding = "";
-                        const index = dataFile.search(insert.search);
+                        const index = dataFile.indexOf(insert.search);
 
                         if (index !== -1) {
 
