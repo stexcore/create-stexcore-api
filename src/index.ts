@@ -91,7 +91,7 @@ const __dirname = dirname(__filename);
             name: "db_path",
             default: ".data/database.sqlite",
             when: (values) => {
-                return values.db_type == "sqlite"
+                return values.db_type == "sqlite";
             }
         },
         {
@@ -114,7 +114,7 @@ const __dirname = dirname(__filename);
                     case "postgres":
                         return 5432;
 
-                    case "mssql":
+                        case "mssql":
                         return 1433;
                 }
             },
@@ -140,6 +140,12 @@ const __dirname = dirname(__filename);
             message: "Please enter the database:",
             default: "optional",
             when: isDBConnection
+        },
+        {
+            type: "confirm",
+            message: "Would you like to initialize the project using git?",
+            name: "init_git",
+            default: true
         }
     ]);
 
@@ -156,7 +162,7 @@ const __dirname = dirname(__filename);
             break;
 
         default:
-            throw new Error("Unknow template '" + values.template + "'");
+            throw new Error("Unknown template '" + values.template + "'");
     }
 
     const template_dir = path.join(__dirname, "../template", template);
@@ -167,7 +173,7 @@ const __dirname = dirname(__filename);
     const destination = path.join(process.cwd(), values.proyect_dir);
 
     if (!fs.existsSync(destination)) {
-        const spinner = CreateLoading("Creating directory:" + destination);
+        const spinner = CreateLoading("Creating directory: " + destination);
         fs.mkdirSync(destination);
         spinner.succeed("Directory '" + destination + "' created!");
     }
@@ -190,17 +196,17 @@ const __dirname = dirname(__filename);
                     "\n\n" +
                     "# Database Config\n" +
                     "DB_TYPE=" + JSON.stringify(values.db_type) + "\n" +
-                        (values.db_type == "sqlite" ? (
-                            "DB_STORAGE=" + JSON.stringify(values.db_path)
-                        ) : (
-                            (
-                                values.db_database === "optional" ? "" :
-                                    ("DB_DATABASE=" + JSON.stringify(values.db_database ?? null))
-                            ) +
-                            "DB_USER=" + JSON.stringify(values.db_user) + "\n" +
-                            "DB_PASSWORD=" + JSON.stringify(values.db_pass) + "\n" +
-                            "DB_HOST=" + JSON.stringify(values.db_host)
-                        ))
+                    (values.db_type == "sqlite" ? (
+                        "DB_STORAGE=" + JSON.stringify(values.db_path)
+                    ) : (
+                        (
+                            values.db_database === "optional" ? "" :
+                                ("DB_DATABASE=" + JSON.stringify(values.db_database ?? null))
+                        ) +
+                        "DB_USER=" + JSON.stringify(values.db_user) + "\n" +
+                        "DB_PASSWORD=" + JSON.stringify(values.db_pass) + "\n" +
+                        "DB_HOST=" + JSON.stringify(values.db_host)
+                    ))
                 );
 
                 switch(values.db_type) {
@@ -221,7 +227,7 @@ const __dirname = dirname(__filename);
                         break;
 
                     default:
-                        console.log("Without append DB connection manager dependencies!");
+                        console.log("Database connection manager dependencies were not appended!");
                 }
             }
         });
@@ -232,17 +238,17 @@ const __dirname = dirname(__filename);
     const devDependencies: string[] = [];
 
     // Copy files
-    for(const copyItem of filesToCopy) {
+    for (const copyItem of filesToCopy) {
         const result = CopyFiles(copyItem.from, copyItem.to);
 
         // Append dependencies founded!
         dependencies.push(...result.dependencies);
         devDependencies.push(...result.devDependencies);
 
-        copyItem.onCopied?.();
+        if (copyItem.onCopied) copyItem.onCopied();
     }
 
-    // Append package.json
+    // Update package.json
     const spinner = CreateLoading("Updating package.json!");
     const packageJsonDir = path.join(destination, "package.json");
     const packageJson = JSON.parse(fs.readFileSync(packageJsonDir).toString());
@@ -251,7 +257,7 @@ const __dirname = dirname(__filename);
     fs.writeFileSync(packageJsonDir, JSON.stringify({
         name: proyect_name,
         version: "1.0.0",
-        description: "Api Express to manage incomming request HTTP",
+        description: "Api Express to manage incoming HTTP requests",
         ...packageJson,
     }, null, 2));
 
@@ -260,23 +266,29 @@ const __dirname = dirname(__filename);
     if (dependencies.length) {
         console.log("Installing dependencies using:");
 
-        const spinner = CreateLoading("npm install " + dependencies.join(" "));
+        const depSpinner = CreateLoading("npm install " + dependencies.join(" "));
 
         await cmd("npm install " + dependencies.join(" "), { cwd: destination });
 
-        spinner.succeed('Dependencies ' + dependencies.join(", ") + ' installed!');
+        depSpinner.succeed("Dependencies " + dependencies.join(", ") + " installed!");
     }
     if (devDependencies.length) {
         console.log("Installing devDependencies using:");
 
-        const spinner = CreateLoading("npm install --save-dev " + devDependencies.join(" "));
+        const devDepSpinner = CreateLoading("npm install --save-dev " + devDependencies.join(" "));
 
         await cmd("npm install --save-dev " + devDependencies.join(" "), { cwd: destination });
 
-        spinner.succeed('devDependencies ' + devDependencies.join(", ") + ' installed!');
+        devDepSpinner.succeed("DevDependencies " + devDependencies.join(", ") + " installed!");
     }
 
     console.log("\n✅ Project successfully generated!");
+
+    if (values.init_git) {
+        const gitSpinner = CreateLoading("Initializing git repository...");
+        await cmd("git init", { cwd: destination });
+        gitSpinner.succeed("Git repository initialized!");
+    }
 
     console.log(`
 👉 To get started with your new project:
