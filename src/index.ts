@@ -282,8 +282,6 @@ const __dirname = dirname(__filename);
         devDepSpinner.succeed("DevDependencies " + devDependencies.join(", ") + " installed!");
     }
 
-    console.log("\n✅ Project successfully generated!");
-
     if (values.init_git) {
         const gitSpinner = CreateLoading("Initializing git repository...");
         await cmd("git init", { cwd: destination });
@@ -377,7 +375,8 @@ function CopyFiles(from_dir: string, to_dir: string): { dependencies: string[], 
                 fs.copyFileSync(fromPath, toPath);
                 spinner.succeed(`File '${item}' copied!`);
             } else {
-                spinner.warn(`Skipping '${item}', already exists.`);
+                fs.copyFileSync(fromPath, toPath);
+                spinner.succeed(`File '${item}' replaced!`);
             }
         }
     }
