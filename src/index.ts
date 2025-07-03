@@ -64,7 +64,7 @@ const __dirname = dirname(__filename);
             type: "confirm",
             message: "Would you like to include 'sequelize' to manage a database?",
             name: "sequelize",
-            default: false
+            default: true
         },
         {
             type: "list",
@@ -80,7 +80,7 @@ const __dirname = dirname(__filename);
                 { value: "I prefer to configure it myself later." }
             ],
             when: (values) => {
-                return values.sequelize == "Yes";
+                return values.sequelize;
             }
         },
         {
@@ -375,10 +375,10 @@ function CopyFiles(from_dir: string, to_dir: string): { dependencies: string[], 
             const spinner = CreateLoading(`Copying '${item}' to '${toPath}'`);
             if (!fs.existsSync(toPath)) {
                 fs.copyFileSync(fromPath, toPath);
-                spinner.succeed(`File '${item}' copied!`);
+                spinner.succeed(`File '${item}' generated!`);
             } else {
                 fs.copyFileSync(fromPath, toPath);
-                spinner.succeed(`File '${item}' replaced!`);
+                spinner.succeed(`File '${item}' generated!`);
             }
         }
     }

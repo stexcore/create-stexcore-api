@@ -4,3 +4,5 @@ dist
 
 # ignore vscode config and environments
 .vscode
+.env
+.data

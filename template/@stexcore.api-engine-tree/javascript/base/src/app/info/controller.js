@@ -1,5 +1,5 @@
 const { Controller } = require("@stexcore/api-engine");
-const InfoService = require("../services/info.service");
+const InfoService = require("../../services/info.service");
 
 /**
  * Handle server information

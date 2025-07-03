@@ -1,9 +1,7 @@
 {
   "scripts": {
-    "start": "node ./dist/index.js",
-    "build": "tsc",
-    "dev": "nodemon",
-    "test": "ts-node ./src/index.ts"
+    "start": "node ./src/index.js",
+    "dev": "nodemon"
   },
   "keywords": [
     "api",

@@ -2,7 +2,7 @@
   "scripts": {
     "start": "node ./dist/index.js",
     "build": "tsc",
-    "dev": "nodemon ./src/index.ts",
+    "dev": "nodemon",
     "test": "ts-node ./src/index.ts"
   },
   "keywords": [

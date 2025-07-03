@@ -4,6 +4,7 @@
     ],
     "dependencies": [
         "@stexcore/api-engine@alpha",
+        "@stexcore/http-status",
         "express",
         "morgan",
         "dotenv"
