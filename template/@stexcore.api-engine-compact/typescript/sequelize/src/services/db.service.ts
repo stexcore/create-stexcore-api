@@ -1,7 +1,44 @@
 import { type Dialect, type ModelStatic, Sequelize } from "sequelize";
 import { type ModelConstructor } from "../types/model-constructor.type";
-import { Service, Server } from "@stexcore/api-engine";
+import { Service, Server, Piece } from "@stexcore/api-engine";
 import UserModel from "../models/user.model";
+
+/**
+ * Declare extensions to Piece class
+ */
+declare module '@stexcore/api-engine' {
+
+    /**
+     * Append methods
+     */
+    interface Piece {
+        /**
+         * Quick access to get model instance
+         * @param modelConstructor Model Constructor
+         * @returns Model item
+         */
+        getModel<M extends ModelConstructor>(modelConstructor: M): ReturnType<M>;
+        /**
+         * Alias to quick access to get model instance
+         * @param modelConstructor Model Constructor
+         * @returns Model item
+         */
+        model$<M extends ModelConstructor>(modelConstructor: M): ReturnType<M>;
+    }
+    
+}
+
+// Append Method to Piece
+Piece.prototype.getModel = 
+Piece.prototype.model$ = (
+    // Function handle to get Model instance
+    function<M extends ModelConstructor>(this: Piece, modelConstructor: M) {
+        // Get DB Service
+        const db = this.getService(DBService);
+        // Get Model
+        return db.getModel(modelConstructor);
+    }
+);
 
 /**
  * DBService
