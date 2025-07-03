@@ -1,0 +1,11 @@
+{
+    "devDependencies": [
+        "nodemon"
+    ],
+    "dependencies": [
+        "@stexcore/api-engine@alpha",
+        "express",
+        "morgan",
+        "dotenv"
+    ]
+}

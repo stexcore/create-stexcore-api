@@ -5,7 +5,8 @@
   "type": "module",
   "bin": "dist/index.js",
   "scripts": {
-    "test": "rm -rf test && mkdir test && npm run build && npm install . --global && cd test && create-stexcore-api; cd ..",
+    "test-global": "rm -rf test && mkdir test && npm run build && npm uninstall . --global && npm install . --global && cd test && create-stexcore-api; cd ..",
+    "test": "rm -rf test && mkdir test && npm run build && cd test && node ../dist/index.js; cd ..",
     "build": "tsc"
   },
   "keywords": [

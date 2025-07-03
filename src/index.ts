@@ -36,8 +36,9 @@ const __dirname = dirname(__filename);
             message: "What template do you prefer to use for development?",
             name: "template",
             choices: [
-                { value: "Express Vanilla" },
-                { value: "Api-Engine Stexcore" }
+                { value: "Api-Engine Stexcore + Tree mode" },
+                { value: "Api-Engine Stexcore + Compact mode" },
+                { value: "Express Vanilla" }
             ]
         },
         {
@@ -60,13 +61,10 @@ const __dirname = dirname(__filename);
             ]
         },
         {
-            type: "list",
+            type: "confirm",
             message: "Would you like to include 'sequelize' to manage a database?",
             name: "sequelize",
-            choices: [
-                { value: "Yes" },
-                { value: "No" }
-            ]
+            default: false
         },
         {
             type: "list",
@@ -156,9 +154,13 @@ const __dirname = dirname(__filename);
         case "Express Vanilla":
             template = "@express.vanilla";
             break;
+        
+        case "Api-Engine Stexcore + Tree mode":
+            template = "@stexcore.api-engine-tree";
+            break;
 
-        case "Api-Engine Stexcore":
-            template = "@stexcore.api-engine";
+        case "Api-Engine Stexcore + Compact mode":
+            template = "@stexcore.api-engine-compact";
             break;
 
         default:
@@ -185,7 +187,7 @@ const __dirname = dirname(__filename);
     filesToCopy.push({ from: directory_base, to: destination });
     filesToCopy.push({ from: directory_template_base, to: destination });
 
-    if (values.sequelize == "Yes") {
+    if (values.sequelize) {
         // Copy sequelize connection
         filesToCopy.push({ 
             from: directory_template_sequelize, 
