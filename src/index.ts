@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-import inquirer from "inquirer";
-import path, { dirname } from "path";
-import fs from "fs";
 import "colors";
+import inquirer from "inquirer";
+import path, { dirname, join } from "path";
+import fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
 import ora from "ora";
@@ -28,6 +28,11 @@ const cmd = promisify(exec);
 // Make filename and dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+const packageJsonBuff = fs.readFileSync(join(__dirname, "../package.json"));
+const packageJson = JSON.parse(packageJsonBuff.toString());
+
+console.log(("Initialize Stexcore API V" + packageJson.version +  "\n").magenta);
 
 (async () => {
     const values = await inquirer.prompt([
