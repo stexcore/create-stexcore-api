@@ -32,6 +32,14 @@ const __dirname = dirname(__filename);
 const packageJsonBuff = fs.readFileSync(join(__dirname, "../package.json"));
 const packageJson = JSON.parse(packageJsonBuff.toString());
 
+console.log("\n" +
+    "███████╗████████╗███████╗██╗  ██╗".white + " ██████╗ ██████╗ ██████╗ ███████╗".gray + "\n" +
+    "██╔════╝╚══██╔══╝██╔════╝╚██╗██╔╝".white + "██╔════╝██╔═══██╗██╔══██╗██╔════╝".gray + "\n" +
+    "███████╗   ██║   █████╗   ╚███╔╝ ".white + "██║     ██║   ██║██████╔╝█████╗  ".gray + "\n" +
+    "╚════██║   ██║   ██╔══╝   ██╔██╗ ".white + "██║     ██║   ██║██╔══██╗██╔══╝  ".gray + "\n" +
+    "███████║   ██║   ███████╗██╔╝ ██╗".white + "╚██████╗╚██████╔╝██║  ██║███████╗".gray + "\n" +
+    "╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝".white + " ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝".gray + "\n"
+);
 console.log(("Initialize Stexcore API V" + packageJson.version +  "\n").magenta);
 
 (async () => {
