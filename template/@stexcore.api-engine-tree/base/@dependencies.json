@@ -3,7 +3,7 @@
         "nodemon"
     ],
     "dependencies": [
-        "@stexcore/api-engine@alpha",
+        "@stexcore/api-engine",
         "@stexcore/http-status",
         "express",
         "morgan",
